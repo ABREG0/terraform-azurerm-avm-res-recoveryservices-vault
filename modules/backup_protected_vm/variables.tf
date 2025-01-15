@@ -1,8 +1,7 @@
-
-variable "site_recovery_fabric" {
+variable "backup_protected_vm" {
   type = object({
-    name                      = string
-    location                  = string
+    source_vm_id              = string
+    backup_policy_id          = string
     vault_name                = string
     vault_resource_group_name = string
     # timeouts = map(string)

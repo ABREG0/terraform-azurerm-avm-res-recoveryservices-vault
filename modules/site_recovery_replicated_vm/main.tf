@@ -13,30 +13,30 @@ resource "azurerm_site_recovery_replicated_vm" "this" {
   target_recovery_protection_container_id = var.replicated_virtual_machine.target_recovery_protection_container_id
 
   dynamic "managed_disk" {
-    for_each = var.replicated_virtual_machine.managed_disk #? {this = var.replicated_virtual_machine.managed_disk} : {}
+    for_each = var.replicated_virtual_machine.managed_disk
     content {
-        disk_id                    = managed_disk.value.disk_id
-        staging_storage_account_id = managed_disk.value.staging_storage_account_id
-        target_resource_group_id   = managed_disk.value.target_resource_group_id
-        target_disk_type           = managed_disk.value.target_disk_type # "Premium_LRS"
-        target_replica_disk_type   = managed_disk.value.target_replica_disk_type # "Premium_LRS"
+      disk_id                    = managed_disk.value.disk_id
+      staging_storage_account_id = managed_disk.value.staging_storage_account_id
+      target_resource_group_id   = managed_disk.value.target_resource_group_id
+      target_disk_type           = managed_disk.value.target_disk_type
+      target_replica_disk_type   = managed_disk.value.target_replica_disk_type
     }
   }
 
   dynamic "network_interface" {
-    for_each = var.replicated_virtual_machine.network_interface #? {this = var.replicated_virtual_machine.network_interface} : {}
+    for_each = var.replicated_virtual_machine.network_interface
     content {
-        source_network_interface_id                    = network_interface.value.source_network_interface_id
-        target_subnet_name = network_interface.value.target_subnet_name
-        recovery_public_ip_address_id   = network_interface.value.recovery_public_ip_address_id
+      source_network_interface_id   = network_interface.value.source_network_interface_id
+      target_subnet_name            = network_interface.value.target_subnet_name
+      recovery_public_ip_address_id = network_interface.value.recovery_public_ip_address_id
     }
   }
   timeouts {
     create = "2h"
     delete = "2h"
-    read = "20m"
+    read   = "20m"
   }
   lifecycle {
-    ignore_changes = [ managed_disk, network_interface ]
+    ignore_changes = [managed_disk, network_interface]
   }
 }

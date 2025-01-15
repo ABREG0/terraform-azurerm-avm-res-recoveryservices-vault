@@ -1,11 +1,11 @@
 
 resource "azurerm_backup_policy_vm" "this" {
-  name                           = var.vm_backup_policy.name                                                                                                                                                   # var.name
-  recovery_vault_name            = var.recovery_vault_name                                                                                                                                                     # var.recovery_vault_name
-  resource_group_name            = var.resource_group_name                                                                                                                                                     # var.resource_group_name
-  instant_restore_retention_days = var.vm_backup_policy.instant_restore_retention_days != null ? var.vm_backup_policy.policy_type == "Weekly" ? 5 : var.vm_backup_policy.instant_restore_retention_days : null # var.instant_restore_retention_days
-  policy_type                    = var.vm_backup_policy.policy_type                                                                                                                                            # var.policy_type
-  timezone                       = var.vm_backup_policy.timezone                                                                                                                                               # var.timezone
+  name                           = var.vm_backup_policy.name
+  recovery_vault_name            = var.recovery_vault_name
+  resource_group_name            = var.resource_group_name
+  instant_restore_retention_days = var.vm_backup_policy.instant_restore_retention_days != null ? var.vm_backup_policy.policy_type == "Weekly" ? 5 : var.vm_backup_policy.instant_restore_retention_days : null
+  policy_type                    = var.vm_backup_policy.policy_type
+  timezone                       = var.vm_backup_policy.timezone
 
   backup {
     frequency     = var.vm_backup_policy.frequency != null ? regex("^Hourly|Daily|Weekly$", var.vm_backup_policy.frequency) : null
@@ -53,11 +53,11 @@ resource "azurerm_backup_policy_vm" "this" {
 
     content {
       count             = var.vm_backup_policy["retention_yearly"].count != 0 && var.vm_backup_policy["retention_yearly"].count != 0 ? regex("^[1-9][0-9]{0,3}$", var.vm_backup_policy["retention_yearly"].count) : null
-      months            = var.vm_backup_policy["retention_yearly"].count != 0 && (var.vm_backup_policy["retention_yearly"].count != 0 && length(var.vm_backup_policy["retention_yearly"].months) > 0) ? var.vm_backup_policy["retention_yearly"].months : []                # var.vm_backup_policy["retention_yearly"].months # 
-      days              = var.vm_backup_policy["retention_yearly"].count != 0 && var.vm_backup_policy.frequency != "Weekly" ? var.vm_backup_policy["retention_yearly"].days : null                                                                                          # (Optional) The days of the month to retain backups of. Must be between 1 and 31.'
-      include_last_days = var.vm_backup_policy["retention_yearly"].count != 0 && var.vm_backup_policy.frequency != "Weekly" ? var.vm_backup_policy["retention_yearly"].include_last_days != null ? var.vm_backup_policy["retention_yearly"].include_last_days : null : null # (Optional) Including the last day of the month, default to false.
-      weekdays          = var.vm_backup_policy["retention_yearly"].count != 0 && var.vm_backup_policy.frequency == "Weekly" ? length(var.vm_backup_policy["retention_yearly"].weekdays) != 0 ? var.vm_backup_policy["retention_yearly"].weekdays : null : null              #  (Optional) The weekday backups to retain . Must be one of Sunday, Monday, Tuesday, Wednesday, Thursday, Friday or Saturday.
-      weeks             = var.vm_backup_policy["retention_yearly"].count != 0 && var.vm_backup_policy.frequency == "Weekly" ? length(var.vm_backup_policy["retention_yearly"].weeks) != 0 ? var.vm_backup_policy["retention_yearly"].weeks : null : null                    #  (Optional) The weeks of the month to retain backups of. Must be one of First, Second, Third, Fourth, Last.
+      months            = var.vm_backup_policy["retention_yearly"].count != 0 && (var.vm_backup_policy["retention_yearly"].count != 0 && length(var.vm_backup_policy["retention_yearly"].months) > 0) ? var.vm_backup_policy["retention_yearly"].months : []
+      days              = var.vm_backup_policy["retention_yearly"].count != 0 && var.vm_backup_policy.frequency != "Weekly" ? var.vm_backup_policy["retention_yearly"].days : null
+      include_last_days = var.vm_backup_policy["retention_yearly"].count != 0 && var.vm_backup_policy.frequency != "Weekly" ? var.vm_backup_policy["retention_yearly"].include_last_days != null ? var.vm_backup_policy["retention_yearly"].include_last_days : null : null
+      weekdays          = var.vm_backup_policy["retention_yearly"].count != 0 && var.vm_backup_policy.frequency == "Weekly" ? length(var.vm_backup_policy["retention_yearly"].weekdays) != 0 ? var.vm_backup_policy["retention_yearly"].weekdays : null : null
+      weeks             = var.vm_backup_policy["retention_yearly"].count != 0 && var.vm_backup_policy.frequency == "Weekly" ? length(var.vm_backup_policy["retention_yearly"].weeks) != 0 ? var.vm_backup_policy["retention_yearly"].weeks : null : null
     }
   }
 }

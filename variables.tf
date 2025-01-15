@@ -1,3 +1,85 @@
+
+variable "site_recovery_fabrics_mapping" {
+  type = map(object({
+      name                                      = string
+      recovery_source_fabric_name                      = string
+      recovery_source_protection_container_name = string
+      recovery_targe_protection_container_name   = string
+      recovery_replication_policy_name            = string
+  }))
+  default = null
+}
+variable "site_recovery_fabrics" {
+  type = map(object({
+    site_name = optional(string)
+    container_name = string
+    fabric_name = string
+    location = string
+  }))
+  default = null
+}
+variable "site_recovery_policies" {
+  type = map(object({
+    name = string
+    site_name = optional(string)
+    recovery_point_retention_in_minutes = string
+    application_consistent_snapshot_frequency_in_minutes = string
+  }))
+  default = null
+}
+variable "site_recovery_network_mapping" {
+  type = map(object({
+    name = string
+    site_name = optional(string)
+    source_recovery_fabric_name = string
+    target_recovery_fabric_name = string
+    source_network_id           = string
+    target_network_id           = string
+  }))
+  default = null
+}
+variable "backup_protected_vm" {
+  type = map(object({
+    source_vm_id = string
+    backup_policy_id = string
+  }))
+  default = null
+}
+variable "site_recovery_virtual_machine" {
+  type = map(object({
+    recovery_replication_policy_name            = string
+    source_recovery_fabric_name = string
+    source_recovery_protection_container_name = string
+    target_resource_group_id               = string
+    target_recovery_fabric_name               = string
+    target_recovery_protection_container_name = string
+    name = string
+    site_name = optional(string)
+    vm_id = string
+    managed_disk = map(object({
+      disk_id = string
+      staging_storage_account_id = string
+      target_resource_group_id = string
+      target_disk_type = string
+      target_replica_disk_type = string
+    }))
+    network_interface = map(object({
+      source_network_interface_id = string
+      target_subnet_name = string
+      recovery_public_ip_address_id = string
+    }))
+  }))
+  default = null
+}
+variable "sites" {
+  type = map(object({
+    site_name = optional(string)
+    key_fabric_source = string
+    key_fabric_target = string
+    location = string
+  }))
+  default = null
+}
 variable "location" {
   type        = string
   description = "Azure region where the resource should be deployed.  If null, the location will be inferred from the resource group location."

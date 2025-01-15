@@ -1,4 +1,6 @@
-
+resource "time_sleep" "wait_pre" {
+  create_duration = try(var.site_recovery_network_mapping.sleep_timer, "60s")
+}
 resource "azurerm_site_recovery_network_mapping" "this" {
   name                        = var.site_recovery_network_mapping.name                        #["name"]
   resource_group_name         = var.site_recovery_network_mapping.vault_resource_group_name   #["vault_resource_group_name"]
@@ -13,4 +15,6 @@ resource "azurerm_site_recovery_network_mapping" "this" {
     delete = "60m"
     read   = "10m"
   }
+  
+  depends_on          = [time_sleep.wait_pre]
 }

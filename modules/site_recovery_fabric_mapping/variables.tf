@@ -9,6 +9,7 @@ variable "fabric_mapping" {
     recovery_source_protection_container_name = string
     recovery_target_protection_container_id   = string
     recovery_replication_policy_id            = string
+    sleep_timer = optional(string, "60s")
   })
   default = null
 }

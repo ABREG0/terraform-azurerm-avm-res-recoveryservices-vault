@@ -65,7 +65,7 @@ module "backup_protected_vm" {
 
     source = "./modules/site_recovery_network_mapping"
 
-    for_each = try(var.site_recovery_network_mapping != null ? var.site_recovery_network_mapping : {}) # local.create_mapping != null ? local.create_mapping : {}
+    for_each = try(var.site_recovery_network_mapping != null ? var.site_recovery_network_mapping : {}) 
     
     site_recovery_network_mapping = {
       name = each.value.name
@@ -75,17 +75,18 @@ module "backup_protected_vm" {
       target_recovery_fabric_name = each.value.target_recovery_fabric_name
       source_network_id = each.value.source_network_id
       target_network_id = each.value.target_network_id
+        sleep_timer = each.value.sleep_timer
     }    
     
     depends_on = [ module.site_recovery_fabric_container, module.site_recovery_policies ]
 
   }
 
-resource "time_sleep" "wait_60_seconds_site_recovery" {
-  depends_on = [azurerm_recovery_services_vault.this]
+# resource "time_sleep" "wait_seconds_site_recovery" {
+#   depends_on = [azurerm_recovery_services_vault.this]
 
-  create_duration = "60s"
-}
+#   create_duration = "60s"
+# }
 
 module "site_recovery_fabric" {
   source = "./modules/site_recovery_fabric"
@@ -97,20 +98,21 @@ module "site_recovery_fabric" {
         location = each.value.location
         vault_name = azurerm_recovery_services_vault.this.name
         vault_resource_group_name = azurerm_recovery_services_vault.this.resource_group_name
+        sleep_timer = each.value.sleep_timer
     }
 
-  depends_on = [ time_sleep.wait_60_seconds_site_recovery ]
+  # depends_on = [ time_sleep.wait_seconds_site_recovery ]
 
 }
 
-resource "time_sleep" "wait_60_seconds_fabric1" {
-  depends_on = [module.site_recovery_fabric]
+# resource "time_sleep" "wait_seconds_fabric" {
+#   depends_on = [module.site_recovery_fabric]
 
-  create_duration = "60s"
-}
+#   create_duration = "60s"
+# }
 
 module "site_recovery_fabric_container" {
-    depends_on = [ module.site_recovery_fabric, time_sleep.wait_60_seconds_fabric1, ]
+    depends_on = [ module.site_recovery_fabric, ]
   source = "./modules/site_recovery_fabric_container"
 
   for_each = try(var.site_recovery_fabrics != null ? var.site_recovery_fabrics : {}) 
@@ -120,6 +122,7 @@ module "site_recovery_fabric_container" {
         location = each.value.location
         vault_name = azurerm_recovery_services_vault.this.name
         vault_resource_group_name = azurerm_recovery_services_vault.this.resource_group_name
+        sleep_timer = each.value.sleep_timer
 
     }
 
@@ -134,8 +137,9 @@ module "site_recovery_policies" {
     name                                                 = each.value.name
     resource_group_name  = azurerm_recovery_services_vault.this.resource_group_name
     recovery_vault_name  = azurerm_recovery_services_vault.this.name
-    recovery_point_retention_in_minutes                  = each.value.recovery_point_retention_in_minutes #24 * 60
-    application_consistent_snapshot_frequency_in_minutes = each.value.application_consistent_snapshot_frequency_in_minutes # 4 * 60
+    recovery_point_retention_in_minutes                  = each.value.recovery_point_retention_in_minutes
+    application_consistent_snapshot_frequency_in_minutes = each.value.application_consistent_snapshot_frequency_in_minutes
+        sleep_timer = each.value.sleep_timer
 
   }
 }
@@ -144,15 +148,16 @@ module "site_recovery_fabric_mapping" {
 
   source = "./modules/site_recovery_fabric_mapping"
 
-  for_each = try(var.site_recovery_fabrics_mapping != null ? var.site_recovery_fabrics_mapping : {}) 
+  for_each = try(var.site_recovery_fabric_mapping != null ? var.site_recovery_fabric_mapping : {}) 
   
     fabric_mapping = {
       name                                      = each.value.name
       vault_name = azurerm_recovery_services_vault.this.name
       vault_resource_group_name = azurerm_recovery_services_vault.this.resource_group_name
-      recovery_source_fabric_name                      = each.value.recovery_source_fabric_name # module.site_recovery_fabric[each.value.recovery_source_fabric_name].resource.name
-      recovery_source_protection_container_name = each.value.recovery_source_protection_container_name # module.site_recovery_fabric_container[each.value.recovery_source_protection_container_name].resource.name
+      recovery_source_fabric_name                      = each.value.recovery_source_fabric_name 
+      recovery_source_protection_container_name = each.value.recovery_source_protection_container_name
       recovery_target_protection_container_id   = module.site_recovery_fabric_container[each.value.recovery_targe_protection_container_name].resource.id
       recovery_replication_policy_id            = module.site_recovery_policies[each.value.recovery_replication_policy_name].resource.id
+        sleep_timer = each.value.sleep_timer
     }
 }

@@ -5,7 +5,7 @@ variable "site_recovery_fabric" {
     location                  = string
     vault_name                = string
     vault_resource_group_name = string
-    # timeouts = map(string)
+    sleep_timer = optional(string, "60s")
 
   })
   default = null

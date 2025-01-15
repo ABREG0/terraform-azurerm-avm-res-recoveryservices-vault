@@ -1,11 +1,12 @@
 
-variable "site_recovery_fabrics_mapping" {
+variable "site_recovery_fabric_mapping" {
   type = map(object({
       name                                      = string
       recovery_source_fabric_name                      = string
       recovery_source_protection_container_name = string
       recovery_targe_protection_container_name   = string
       recovery_replication_policy_name            = string
+      sleep_timer = optional(string, "60s")
   }))
   default = null
 }
@@ -15,6 +16,7 @@ variable "site_recovery_fabrics" {
     container_name = string
     fabric_name = string
     location = string
+      sleep_timer = optional(string, "60s")
   }))
   default = null
 }
@@ -24,6 +26,7 @@ variable "site_recovery_policies" {
     site_name = optional(string)
     recovery_point_retention_in_minutes = string
     application_consistent_snapshot_frequency_in_minutes = string
+      sleep_timer = optional(string, "60s")
   }))
   default = null
 }
@@ -35,6 +38,7 @@ variable "site_recovery_network_mapping" {
     target_recovery_fabric_name = string
     source_network_id           = string
     target_network_id           = string
+      sleep_timer = optional(string, "60s")
   }))
   default = null
 }
@@ -42,6 +46,7 @@ variable "backup_protected_vm" {
   type = map(object({
     source_vm_id = string
     backup_policy_id = string
+      sleep_timer = optional(string, "60s")
   }))
   default = null
 }

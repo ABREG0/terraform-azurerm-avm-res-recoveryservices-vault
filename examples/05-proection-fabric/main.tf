@@ -69,21 +69,21 @@ module "azure_region" {
 }
 # must be located in the same region as the VM to be backed up
 resource "azurerm_storage_account" "primary_wus1" {
-  name                     = "rsv${azurerm_resource_group.primary_wus1.location}002"
+  name                     = "srv${azurerm_resource_group.primary_wus1.location}002"
   location                 = azurerm_resource_group.primary_wus1.location
   resource_group_name      = azurerm_resource_group.primary_wus1.name
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
 resource "azurerm_storage_account" "primary_wus2" {
-  name                     = "rsv${azurerm_resource_group.primary_wus2.location}001"
+  name                     = "srv${azurerm_resource_group.primary_wus2.location}001"
   location                 = azurerm_resource_group.primary_wus2.location
   resource_group_name      = azurerm_resource_group.primary_wus2.name
   account_tier             = "Standard"
   account_replication_type = "ZRS"
 }
 resource "azurerm_storage_account" "primary_wus3" {
-  name                     = "rsv${azurerm_resource_group.primary_wus3.location}001"
+  name                     = "srv${azurerm_resource_group.primary_wus3.location}001"
   location                 = azurerm_resource_group.primary_wus3.location
   resource_group_name      = azurerm_resource_group.primary_wus3.name
   account_tier             = "Standard"
@@ -99,7 +99,7 @@ module "recovery_services_vault" {
 
   source = "../../"
 
-  name                                           = local.vault_name #"rsv-test-vault-001"
+  name                                           = local.vault_name #"srv-test-vault-001"
     location                                       = azurerm_resource_group.this.location
     resource_group_name                            = azurerm_resource_group.this.name
     cross_region_restore_enabled                   = false
@@ -120,7 +120,7 @@ module "recovery_services_vault" {
     dept  = "IT"
   }
   # fabric are created in spefici 'locations' to either be a source or target of VM replications
-  rsv_fabrics = {
+  site_recovery_fabrics = {
       westus = {
         container_name = "con-westus-s1" #"container001"
         fabric_name = "fab-westus-s1" #"fabric001"
@@ -152,7 +152,7 @@ module "recovery_services_vault" {
         location = "eastus2" # location where you want the VMs to be replicated to
       }
   }
-  rsv_policies = {
+  site_recovery_policies = {
     pol-westus-to-eastus-s1 = {
         name = "pol-westus-to-eastus-s1"
         recovery_point_retention_in_minutes = 24 * 60
@@ -169,7 +169,7 @@ module "recovery_services_vault" {
         application_consistent_snapshot_frequency_in_minutes = 4 * 60
       }
   }
-  rsv_network_mapping = {
+  site_recovery_network_mapping = {
     site1 = {
       name = "site1-network-mapping"
       source_recovery_fabric_name = "fab-westus-s1"
@@ -193,7 +193,7 @@ module "recovery_services_vault" {
     }
   }
   
-  rsv_fabrics_mapping = {
+  site_recovery_fabric_mapping = {
     site1-westus-to-eastus-s1 = {
       name = "site1-westus-to-eastus-s1"
       recovery_source_fabric_name = "fab-westus-s1"
@@ -216,31 +216,15 @@ module "recovery_services_vault" {
       recovery_replication_policy_name           = "pol-westus3-to-eastus2-s3"
     }
   }
-  rsv_backup_protected_vm = {
+  backup_protected_vm = {
     
     vm-03 =  {
         backup_policy_id            = "${data.azurerm_subscription.This.id}/resourceGroups/${azurerm_resource_group.this.name}/providers/Microsoft.RecoveryServices/vaults/${local.vault_name}/backupPolicies/DefaultPolicy"
         source_vm_id = azurerm_windows_virtual_machine.vm_wus3.id # nes/vm"
-        # managed_disk = {
-        #   disk0 = {
-        #     disk_id = data.azurerm_managed_disk.vm_wus3_osdisk.id
-        #     staging_storage_account_id = azurerm_storage_account.primary_wus3.id
-        #     target_resource_group_id = azurerm_resource_group.secondary_eus2.id
-        #     target_disk_type = "Premium_LRS"
-        #     target_replica_disk_type = "Premium_LRS"
-        #   }
-        # }
-        # network_interface = {
-        #   nic0 = {
-        #     source_network_interface_id = azurerm_network_interface.vm_wus3.id
-        #     target_subnet_name = "targe-${azurerm_network_interface.vm_wus3.name}"
-        #     recovery_public_ip_address_id = azurerm_public_ip.eastus2.id
-        #   }
-        # }
     }
   }
 
-  rsv_virtual_machine  = {
+  site_recovery_virtual_machine  = {
     # vm-01 =  {
     #   recovery_replication_policy_name            = "pol-westus-to-eastus-s1"
     #   source_recovery_fabric_name = "fab-westus-s1"
@@ -335,7 +319,7 @@ module "recovery_services_vault" {
 
 
   /*
-  rsv_fabric_mapping = {
+  site_recovery_fabric_mapping = {
     name = "fabric-mappin-site3"
     key_fabric_source = "site3_source"
     key_fabric_target = "site3_target"

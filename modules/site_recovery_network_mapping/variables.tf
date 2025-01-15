@@ -8,6 +8,7 @@ variable "site_recovery_network_mapping" {
     target_recovery_fabric_name = string
     source_network_id           = string
     target_network_id           = string
+    sleep_timer = optional(string, "60s")
   })
   default = null
 }

@@ -9,6 +9,7 @@ variable "replicated_virtual_machine" {
     target_resource_group_id                  = string
     target_recovery_fabric_id                 = string
     target_recovery_protection_container_id   = string
+    sleep_timer = optional(string, "60s")
 
     vm_id = string
     managed_disk = map(object({

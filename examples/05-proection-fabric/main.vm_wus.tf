@@ -9,7 +9,7 @@ resource "azurerm_windows_virtual_machine" "vm_wus1" {
   name                = "vm-${azurerm_resource_group.primary_wus1.location}-001"
   location             = azurerm_resource_group.primary_wus1.location
   resource_group_name  = azurerm_resource_group.primary_wus1.name
-  size                = "Standard_D11_v2_Promo"
+  size                = "Standard_B1ms"
   admin_username      = "adminuser"
   admin_password      = "P@$$w0rd1234!"
   network_interface_ids = [azurerm_network_interface.vm_wus1.id]

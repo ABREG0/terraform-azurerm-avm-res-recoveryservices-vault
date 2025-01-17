@@ -82,12 +82,6 @@ module "backup_protected_vm" {
 
   }
 
-# resource "time_sleep" "wait_seconds_site_recovery" {
-#   depends_on = [azurerm_recovery_services_vault.this]
-
-#   create_duration = "60s"
-# }
-
 module "site_recovery_fabric" {
   source = "./modules/site_recovery_fabric"
 
@@ -105,12 +99,22 @@ module "site_recovery_fabric" {
 
 }
 
-# resource "time_sleep" "wait_seconds_fabric" {
-#   depends_on = [module.site_recovery_fabric]
+module "backup_protected_file_share" {
+  
+  source = "./modules/backup_protected_file_share"
 
-#   create_duration = "60s"
-# }
+  for_each = try(var.backup_protected_file_share != null ? var.backup_protected_file_share : {}) 
+    backup_protected_file_share = {
+      vault_name = azurerm_recovery_services_vault.this.name
+      vault_resource_group_name = azurerm_recovery_services_vault.this.resource_group_name
+      source_storage_account_id = each.value.source_storage_account_id
+      source_file_share_name    = each.value.source_file_share_name
+      backup_policy_id          = module.recovery_services_vault_file_share_policy[each.value.backup_policy_key].resource_id
+      sleep_timer = each.value.sleep_timer
 
+    }
+
+}
 module "site_recovery_fabric_container" {
     depends_on = [ module.site_recovery_fabric, ]
   source = "./modules/site_recovery_fabric_container"

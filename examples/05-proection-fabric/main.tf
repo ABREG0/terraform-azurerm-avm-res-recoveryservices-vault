@@ -69,12 +69,13 @@ module "azure_region" {
 }
 # must be located in the same region as the VM to be backed up
 resource "azurerm_storage_account" "primary_wus1" {
-  name                     = "srv${azurerm_resource_group.primary_wus1.location}002"
+  name                     = "srv${azurerm_resource_group.primary_wus1.location}001"
   location                 = azurerm_resource_group.primary_wus1.location
   resource_group_name      = azurerm_resource_group.primary_wus1.name
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
+
 resource "azurerm_storage_account" "primary_wus2" {
   name                     = "srv${azurerm_resource_group.primary_wus2.location}001"
   location                 = azurerm_resource_group.primary_wus2.location
@@ -88,6 +89,11 @@ resource "azurerm_storage_account" "primary_wus3" {
   resource_group_name      = azurerm_resource_group.primary_wus3.name
   account_tier             = "Standard"
   account_replication_type = "ZRS"
+}
+resource "azurerm_storage_share" "this" {
+  name                 = "share1"
+  storage_account_id = azurerm_storage_account.primary_wus3.id
+  quota                = 50
 }
 resource "azurerm_user_assigned_identity" "this" {
   location            = azurerm_resource_group.this.location
@@ -119,7 +125,54 @@ module "recovery_services_vault" {
     owner = "ABREG0"
     dept  = "IT"
   }
+  
+  file_share_backup_policy = {
+    fs_obj_key_pol_001 = {
+      name     = "pol-rsv-fileshare-vault-001"
+      timezone = "Pacific Standard Time"
+
+      frequency = "Daily" # (Required) Sets the backup frequency. Possible values are hourly, Daily
+
+      backup = {
+        time = "22:00"
+        hourly = {
+          interval        = 6
+          start_time      = "13:00"
+          window_duration = "6"
+        }
+      }
+      retention_daily = 1 # 1-200
+      retention_weekly = {
+        count    = 7
+        weekdays = ["Tuesday", "Saturday"]
+      }
+      retention_monthly = {
+        count = 5
+        # weekdays =  ["Tuesday","Saturday"]
+        # weeks = ["First","Third"]
+        days              = [3, 10, 20]
+        include_last_days = false
+      }
+      retention_yearly = {
+        count    = 5
+        months   = ["January", "June"]
+        weekdays = ["Tuesday", "Saturday"]
+        weeks    = ["First", "Third"]
+        # days = [3, 10, 20]
+        # include_last_days = false
+      }
+    }
+  }
+  backup_protected_file_share = {
+    protect-share-s1 = {
+      source_storage_account_id = "${data.azurerm_subscription.This.id}/resourceGroups/${azurerm_resource_group.primary_wus3.name}/providers/Microsoft.Storage/storageAccounts/srvwestus3001"
+      source_file_share_name    = azurerm_storage_share.this.name
+      backup_policy_key          = "fs_obj_key_pol_001"
+      sleep_timer = "30s"
+      }
+  }
   # fabric are created in spefici 'locations' to either be a source or target of VM replications
+  
   site_recovery_fabrics = {
       westus = {
         container_name = "con-westus-s1" #"container001"

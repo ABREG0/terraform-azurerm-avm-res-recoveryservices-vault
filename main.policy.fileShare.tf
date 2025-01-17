@@ -8,3 +8,6 @@ module "recovery_services_vault_file_share_policy" {
   file_share_backup_policy = each.value
 
 }
+# output "fs_policy" {
+#   value = module.recovery_services_vault_file_share_policy["fs_obj_key_pol_001"].resource_id
+# }

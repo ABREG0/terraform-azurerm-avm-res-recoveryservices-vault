@@ -1,4 +1,14 @@
+variable "backup_protected_file_share" {
+  type = map(object({
+    source_storage_account_id              = string
+    backup_policy_key          = string
+    source_file_share_name          = string
+    disable_registration = optional(bool, false)
+    sleep_timer = optional(string, "60s")
 
+  }))
+  default = null
+}
 variable "site_recovery_fabric_mapping" {
   type = map(object({
       name                                      = string

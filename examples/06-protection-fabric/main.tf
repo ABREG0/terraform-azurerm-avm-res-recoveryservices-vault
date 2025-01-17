@@ -125,52 +125,7 @@ module "recovery_services_vault" {
     owner = "ABREG0"
     dept  = "IT"
   }
-  
-  file_share_backup_policy = {
-    fs_obj_key_pol_001 = {
-      name     = "pol-rsv-fileshare-vault-001"
-      timezone = "Pacific Standard Time"
 
-      frequency = "Daily" # (Required) Sets the backup frequency. Possible values are hourly, Daily
-
-      backup = {
-        time = "22:00"
-        hourly = {
-          interval        = 6
-          start_time      = "13:00"
-          window_duration = "6"
-        }
-      }
-      retention_daily = 1 # 1-200
-      retention_weekly = {
-        count    = 7
-        weekdays = ["Tuesday", "Saturday"]
-      }
-      retention_monthly = {
-        count = 5
-        # weekdays =  ["Tuesday","Saturday"]
-        # weeks = ["First","Third"]
-        days              = [3, 10, 20]
-        include_last_days = false
-      }
-      retention_yearly = {
-        count    = 5
-        months   = ["January", "June"]
-        weekdays = ["Tuesday", "Saturday"]
-        weeks    = ["First", "Third"]
-        # days = [3, 10, 20]
-        # include_last_days = false
-      }
-    }
-  }
-  backup_protected_file_share = {
-    protect-share-s1 = {
-      source_storage_account_id = "${data.azurerm_subscription.This.id}/resourceGroups/${azurerm_resource_group.primary_wus3.name}/providers/Microsoft.Storage/storageAccounts/srvwestus3001"
-      source_file_share_name    = azurerm_storage_share.this.name
-      backup_policy_key          = "fs_obj_key_pol_001"
-      sleep_timer = "30s"
-      }
-  }
   # fabric are created in spefici 'locations' to either be a source or target of VM replications
   
   site_recovery_fabrics = {
@@ -267,13 +222,6 @@ module "recovery_services_vault" {
       recovery_source_protection_container_name = "con-westus3-s3"
       recovery_targe_protection_container_name = "eastus2"
       recovery_replication_policy_name           = "pol-westus3-to-eastus2-s3"
-    }
-  }
-  backup_protected_vm = {
-    
-    vm-03 =  {
-        backup_policy_id            = "${data.azurerm_subscription.This.id}/resourceGroups/${azurerm_resource_group.this.name}/providers/Microsoft.RecoveryServices/vaults/${local.vault_name}/backupPolicies/DefaultPolicy"
-        source_vm_id = azurerm_windows_virtual_machine.vm_wus3.id # nes/vm"
     }
   }
 

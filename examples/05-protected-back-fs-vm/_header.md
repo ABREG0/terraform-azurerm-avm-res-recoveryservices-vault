@@ -1,6 +1,11 @@
 # Default example
 
-* This deploys the module with VM and file share protected backup with custom policies file share, virtual machine.
+* This deploys the module with site recovery resources.
+
+* fabric and containers
+* replication policy
+* fabric mapping
+* network mapping
 
 ## Data Collection
 

@@ -24,44 +24,45 @@ locals {
                       # if top_value["resource"].name == "fab-centralus-s2"
                     }
 }
-/*
-output "taget_container_id_westus" {
-  value = module.site_recovery_fabric_container["eastus"].resource.id
+output "backup_protected_file_share" {
+  value = module.backup_protected_file_share
 }
 
+# resource "azurerm_backup_container_storage_account" "this" {
 
-module "backup_protected_vm" {
-  source = "./modules/backup_protected_vm"
 
-  for_each = try(var.site_recovery_backup_protected_vm != null ? var.site_recovery_backup_protected_vm : {})
-  backup_protected_vm = {
-    source_vm_id = each.value.source_vm_id
-    backup_policy_id = each.value.backup_policy_id
-    vault_name = azurerm_recovery_services_vault.this.name
-    vault_resource_group_name = azurerm_recovery_services_vault.this.resource_group_name
-  }
+#   for_each = try(var.backup_protected_file_share != null ? var.backup_protected_file_share : {}) 
+
+#   resource_group_name       = azurerm_recovery_services_vault.this.resource_group_name
+#   recovery_vault_name       = azurerm_recovery_services_vault.this.name
+#   storage_account_id  = each.value.source_storage_account_id
+#   timeouts {
+#     create = "60m"
+#     delete = "60m"
+#     read   = "10m"
+#   }
+  
+# }
+
+module "backup_protected_file_share" {
+  
+  source = "./modules/backup_protected_file_share"
+
+  for_each = try(var.backup_protected_file_share != null ? var.backup_protected_file_share : {}) 
+    backup_protected_file_share = {
+      vault_name = azurerm_recovery_services_vault.this.name
+      vault_resource_group_name = azurerm_recovery_services_vault.this.resource_group_name
+      source_storage_account_id = each.value.source_storage_account_id
+      source_file_share_name    = each.value.source_file_share_name
+      backup_file_share_policy_name          = each.value.backup_file_share_policy_name
+      disable_registration = false
+      sleep_timer = each.value.sleep_timer
+
+    }
+
+    depends_on = [ module.recovery_services_vault_file_share_policy, ] #azurerm_backup_container_storage_account.this ]
+
 }
-
-  output "policy_id" {
-    value = [for top_key, top_value in module.site_recovery_policies: 
-              top_value["resource"].id 
-              if top_value["resource"].name == "pol-westus2-to-centralus-s2"
-            ] 
-  }
-
-  output "containers" {
-    value = [for top_key, top_value in module.site_recovery_fabric_container: 
-              top_value["resource"].id 
-              if top_value["resource"].name == "con-westus-s1"
-            ]
-  }
-  output "fabrics" {
-    value = [for top_key, top_value in module.site_recovery_fabric: 
-              top_value["resource"].id 
-              if top_value["resource"].name == "fab-westus-s1"
-            ]
-  }
-*/
   module "site_recovery_network_mapping" {
 
     source = "./modules/site_recovery_network_mapping"
@@ -100,22 +101,6 @@ module "site_recovery_fabric" {
 
 }
 
-module "backup_protected_file_share" {
-  
-  source = "./modules/backup_protected_file_share"
-
-  for_each = try(var.backup_protected_file_share != null ? var.backup_protected_file_share : {}) 
-    backup_protected_file_share = {
-      vault_name = azurerm_recovery_services_vault.this.name
-      vault_resource_group_name = azurerm_recovery_services_vault.this.resource_group_name
-      source_storage_account_id = each.value.source_storage_account_id
-      source_file_share_name    = each.value.source_file_share_name
-      backup_policy_id          = module.recovery_services_vault_file_share_policy[each.value.backup_policy_key].resource_id
-      sleep_timer = each.value.sleep_timer
-
-    }
-
-}
 module "site_recovery_fabric_container" {
     depends_on = [ module.site_recovery_fabric, ]
   source = "./modules/site_recovery_fabric_container"
@@ -166,3 +151,41 @@ module "site_recovery_fabric_mapping" {
         sleep_timer = each.value.sleep_timer
     }
 }
+/*
+output "taget_container_id_westus" {
+  value = module.site_recovery_fabric_container["eastus"].resource.id
+}
+
+
+module "backup_protected_vm" {
+  source = "./modules/backup_protected_vm"
+
+  for_each = try(var.site_recovery_backup_protected_vm != null ? var.site_recovery_backup_protected_vm : {})
+  backup_protected_vm = {
+    source_vm_id = each.value.source_vm_id
+    backup_policy_id = each.value.backup_policy_id
+    vault_name = azurerm_recovery_services_vault.this.name
+    vault_resource_group_name = azurerm_recovery_services_vault.this.resource_group_name
+  }
+}
+
+  output "policy_id" {
+    value = [for top_key, top_value in module.site_recovery_policies: 
+              top_value["resource"].id 
+              if top_value["resource"].name == "pol-westus2-to-centralus-s2"
+            ] 
+  }
+
+  output "containers" {
+    value = [for top_key, top_value in module.site_recovery_fabric_container: 
+              top_value["resource"].id 
+              if top_value["resource"].name == "con-westus-s1"
+            ]
+  }
+  output "fabrics" {
+    value = [for top_key, top_value in module.site_recovery_fabric: 
+              top_value["resource"].id 
+              if top_value["resource"].name == "fab-westus-s1"
+            ]
+  }
+*/

@@ -24,7 +24,7 @@ resource "azurerm_backup_protected_file_share" "this" {
   recovery_vault_name       = var.backup_protected_file_share.vault_name
   source_storage_account_id = var.backup_protected_file_share.source_storage_account_id
   source_file_share_name    = var.backup_protected_file_share.source_file_share_name
-  backup_policy_id          = var.backup_protected_file_share.backup_policy_id
+  backup_policy_id          = data.azurerm_backup_policy_file_share.policy.id
   timeouts {
     create = "60m"
     delete = "60m"

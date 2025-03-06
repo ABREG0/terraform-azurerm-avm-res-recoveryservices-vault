@@ -90,9 +90,17 @@ resource "azurerm_storage_account" "primary_wus3" {
   account_tier             = "Standard"
   account_replication_type = "ZRS"
 }
+resource "azurerm_storage_account" "sa" {
+  name                     = "fsbk${azurerm_resource_group.primary_wus3.location}005"
+  location                 = azurerm_resource_group.primary_wus3.location
+  resource_group_name      = azurerm_resource_group.primary_wus3.name
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+
 resource "azurerm_storage_share" "this" {
   name               = "share1"
-  storage_account_id = azurerm_storage_account.primary_wus3.id
+  storage_account_id = azurerm_storage_account.sa.id
   quota              = 50
 }
 resource "azurerm_user_assigned_identity" "this" {
@@ -165,18 +173,19 @@ module "recovery_services_vault" {
   }
   backup_protected_file_share = {
     protect-share-s1 = {
-      source_storage_account_id = "${data.azurerm_subscription.This.id}/resourceGroups/${azurerm_resource_group.primary_wus3.name}/providers/Microsoft.Storage/storageAccounts/srvwestus3005"
+      source_storage_account_id = "/subscriptions/6284f04c-ec26-45e3-a7a6-24c2ef4722e4/resourceGroups/${azurerm_resource_group.primary_wus3.name}/providers/Microsoft.Storage/storageAccounts/fsbk${azurerm_resource_group.primary_wus3.location}005" 
+                                                #"${data.azurerm_subscription.This.id}/resourceGroups/${azurerm_resource_group.primary_wus3.name}/providers/Microsoft.Storage/storageAccounts/fsbk${azurerm_resource_group.primary_wus3.location}005"
       source_file_share_name    = azurerm_storage_share.this.name
-      backup_policy_key         = "fs_obj_key_pol_005"
+      backup_file_share_policy_name         = "pol-rsv-fileshare-vault-005"
       sleep_timer               = "30s"
     }
   }
   backup_protected_vm = {
-
     vm-03 = {
-      backup_policy_id = "${data.azurerm_subscription.This.id}/resourceGroups/${azurerm_resource_group.this.name}/providers/Microsoft.RecoveryServices/vaults/${local.vault_name}/backupPolicies/DefaultPolicy"
+      backup_policy_id = "${data.azurerm_subscription.This.id}/resourceGroups/${azurerm_resource_group.this.name}/providers/Microsoft.RecoveryServices/vaults/${local.vault_name}/backupPolicies/EnhancedPolicy"
       source_vm_id     = azurerm_windows_virtual_machine.vm_wus3.id # nes/vm"
     }
   }
 
+depends_on = [ azurerm_storage_account.sa ]
 }

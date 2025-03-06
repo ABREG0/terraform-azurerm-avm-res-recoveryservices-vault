@@ -1,7 +1,7 @@
 variable "backup_protected_file_share" {
   type = map(object({
     source_storage_account_id              = string
-    backup_policy_key          = string
+    backup_file_share_policy_name          = string
     source_file_share_name          = string
     disable_registration = optional(bool, false)
     sleep_timer = optional(string, "60s")

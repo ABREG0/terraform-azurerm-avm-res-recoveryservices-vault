@@ -43,6 +43,17 @@ output "backup_protected_file_share" {
 #   }
   
 # }
+module "backup_protected_vm" {
+  source = "./modules/backup_protected_vm"
+
+  for_each = try(var.backup_protected_vm != null ? var.backup_protected_vm : {})
+  backup_protected_vm = {
+    source_vm_id = each.value.source_vm_id
+    vm_backup_policy_name = each.value.vm_backup_policy_name
+    vault_name = azurerm_recovery_services_vault.this.name
+    vault_resource_group_name = azurerm_recovery_services_vault.this.resource_group_name
+  }
+}
 
 module "backup_protected_file_share" {
   

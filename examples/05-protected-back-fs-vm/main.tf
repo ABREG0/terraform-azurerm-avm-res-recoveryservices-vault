@@ -182,7 +182,7 @@ module "recovery_services_vault" {
   }
   backup_protected_vm = {
     vm-03 = {
-      backup_policy_id = "${data.azurerm_subscription.This.id}/resourceGroups/${azurerm_resource_group.this.name}/providers/Microsoft.RecoveryServices/vaults/${local.vault_name}/backupPolicies/EnhancedPolicy"
+      vm_backup_policy_name = "EnhancedPolicy"
       source_vm_id     = azurerm_windows_virtual_machine.vm_wus3.id # nes/vm"
     }
   }

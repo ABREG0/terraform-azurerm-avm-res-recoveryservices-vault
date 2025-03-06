@@ -55,7 +55,7 @@ variable "site_recovery_network_mapping" {
 variable "backup_protected_vm" {
   type = map(object({
     source_vm_id = string
-    backup_policy_id = string
+    vm_backup_policy_name = string
       sleep_timer = optional(string, "60s")
   }))
   default = null

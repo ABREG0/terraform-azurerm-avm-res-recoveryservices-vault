@@ -24,10 +24,11 @@ locals {
                       # if top_value["resource"].name == "fab-centralus-s2"
                     }
 }
+/*
 output "taget_container_id_westus" {
   value = module.site_recovery_fabric_container["eastus"].resource.id
 }
-/*
+
 
 module "backup_protected_vm" {
   source = "./modules/backup_protected_vm"

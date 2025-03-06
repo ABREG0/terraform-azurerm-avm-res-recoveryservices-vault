@@ -21,7 +21,7 @@ module "naming" {
 }
 
 resource "azurerm_resource_group" "this" {
-  location = "westus3" #local.test_regions[random_integer.region_index.result]
+  location = "westus3"              #local.test_regions[random_integer.region_index.result]
   name     = "rg-westus3-vault-005" #module.naming.resource_group.name_unique
 }
 resource "azurerm_resource_group" "primary_wus1" {
@@ -91,9 +91,9 @@ resource "azurerm_storage_account" "primary_wus3" {
   account_replication_type = "ZRS"
 }
 resource "azurerm_storage_share" "this" {
-  name                 = "share1"
+  name               = "share1"
   storage_account_id = azurerm_storage_account.primary_wus3.id
-  quota                = 50
+  quota              = 50
 }
 resource "azurerm_user_assigned_identity" "this" {
   location            = azurerm_resource_group.this.location
@@ -106,26 +106,26 @@ module "recovery_services_vault" {
   source = "../../"
 
   name                                           = local.vault_name #"srv-test-vault-005"
-    location                                       = azurerm_resource_group.this.location
-    resource_group_name                            = azurerm_resource_group.this.name
-    cross_region_restore_enabled                   = false
-    alerts_for_all_job_failures_enabled            = true
-    alerts_for_critical_operation_failures_enabled = true
-    classic_vmware_replication_enabled             = false
-    public_network_access_enabled                  = true
-    storage_mode_type                              = "GeoRedundant"
-    sku                                            = "RS0"
-    managed_identities = {
-      system_assigned = true
-      user_assigned_resource_ids = [ azurerm_user_assigned_identity.this.id, ]
-    }
+  location                                       = azurerm_resource_group.this.location
+  resource_group_name                            = azurerm_resource_group.this.name
+  cross_region_restore_enabled                   = false
+  alerts_for_all_job_failures_enabled            = true
+  alerts_for_critical_operation_failures_enabled = true
+  classic_vmware_replication_enabled             = false
+  public_network_access_enabled                  = true
+  storage_mode_type                              = "GeoRedundant"
+  sku                                            = "RS0"
+  managed_identities = {
+    system_assigned            = true
+    user_assigned_resource_ids = [azurerm_user_assigned_identity.this.id, ]
+  }
 
   tags = {
     env   = "Prod"
     owner = "ABREG0"
     dept  = "IT"
   }
-  
+
   file_share_backup_policy = {
     fs_obj_key_pol_001 = {
       name     = "pol-rsv-fileshare-vault-005"
@@ -167,15 +167,15 @@ module "recovery_services_vault" {
     protect-share-s1 = {
       source_storage_account_id = "${data.azurerm_subscription.This.id}/resourceGroups/${azurerm_resource_group.primary_wus3.name}/providers/Microsoft.Storage/storageAccounts/srvwestus3005"
       source_file_share_name    = azurerm_storage_share.this.name
-      backup_policy_key          = "fs_obj_key_pol_005"
-      sleep_timer = "30s"
-      }
+      backup_policy_key         = "fs_obj_key_pol_005"
+      sleep_timer               = "30s"
+    }
   }
   backup_protected_vm = {
-    
-    vm-03 =  {
-        backup_policy_id            = "${data.azurerm_subscription.This.id}/resourceGroups/${azurerm_resource_group.this.name}/providers/Microsoft.RecoveryServices/vaults/${local.vault_name}/backupPolicies/DefaultPolicy"
-        source_vm_id = azurerm_windows_virtual_machine.vm_wus3.id # nes/vm"
+
+    vm-03 = {
+      backup_policy_id = "${data.azurerm_subscription.This.id}/resourceGroups/${azurerm_resource_group.this.name}/providers/Microsoft.RecoveryServices/vaults/${local.vault_name}/backupPolicies/DefaultPolicy"
+      source_vm_id     = azurerm_windows_virtual_machine.vm_wus3.id # nes/vm"
     }
   }
 

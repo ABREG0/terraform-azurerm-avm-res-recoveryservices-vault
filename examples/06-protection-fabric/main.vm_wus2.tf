@@ -1,21 +1,21 @@
 
 
-data "azurerm_managed_disk" "vm_wus2_osdisk" { 
+data "azurerm_managed_disk" "vm_wus2_osdisk" {
   ##Needed to use a data resource to retrieve the OS disk ID
   name                = azurerm_windows_virtual_machine.vm_wus2.os_disk[0].name
   resource_group_name = azurerm_windows_virtual_machine.vm_wus2.resource_group_name
 }
 resource "azurerm_windows_virtual_machine" "vm_wus2" {
-  name                = "vm-${azurerm_resource_group.primary_wus2.location}-001"
-  location             = azurerm_resource_group.primary_wus2.location
-  resource_group_name  = azurerm_resource_group.primary_wus2.name
-  size                = "Standard_B1s"
-  admin_username      = "adminuser"
-  admin_password      = "P@$$w0rd1234!"
+  name                  = "vm-${azurerm_resource_group.primary_wus2.location}-001"
+  location              = azurerm_resource_group.primary_wus2.location
+  resource_group_name   = azurerm_resource_group.primary_wus2.name
+  size                  = "Standard_B1s"
+  admin_username        = "adminuser"
+  admin_password        = "P@$$w0rd1234!"
   network_interface_ids = [azurerm_network_interface.vm_wus2.id]
   identity {
-    type = "SystemAssigned, UserAssigned"
-    identity_ids = [ azurerm_user_assigned_identity.this.id ]
+    type         = "SystemAssigned, UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.this.id]
   }
 
 
@@ -31,7 +31,7 @@ resource "azurerm_windows_virtual_machine" "vm_wus2" {
     version   = "latest"
   }
   lifecycle {
-    ignore_changes = [ identity, ]
+    ignore_changes = [identity, ]
   }
 }
 resource "azurerm_managed_disk" "vm_wus2" {

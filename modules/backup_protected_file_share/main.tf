@@ -1,5 +1,5 @@
 
-resource "azurerm_backup_container_storage_account" "container" {
+resource "azurerm_backup_container_storage_account" "this" {
 
   count = var.backup_protected_file_share.disable_registration == true ? 0 : 1
 
@@ -17,7 +17,7 @@ resource "azurerm_backup_container_storage_account" "container" {
 resource "time_sleep" "wait_pre" {
   create_duration = try(var.backup_protected_file_share.sleep_timer, "60s")
 
-  depends_on = [ azurerm_backup_container_storage_account.container ]
+  depends_on = [ azurerm_backup_container_storage_account.this ]
 }
 resource "azurerm_backup_protected_file_share" "this" {
   resource_group_name       = var.backup_protected_file_share.vault_resource_group_name

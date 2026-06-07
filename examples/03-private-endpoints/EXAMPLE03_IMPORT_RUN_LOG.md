@@ -3,7 +3,7 @@
 Date: 2026-06-07
 Scope: `examples/03-private-endpoints`
 Scenario: Import an existing Recovery Services vault into the latest AzAPI-based module path
-Target subscription: `'subscritpion-guid-xxxxxxx'`
+Target subscription: `subscription-guid-xxxxxxxx`
 
 ## Purpose
 This file captures the full step-by-step execution of the import scenario in a more verbose form than the postmortem. It records what was done, what Terraform reported, what failed, and how the state was repaired.
@@ -11,7 +11,7 @@ This file captures the full step-by-step execution of the import scenario in a m
 ## Starting Point
 - The example had already been validated and applied successfully before this scenario.
 - The module had been updated to use `azapi_resource` for the Recovery Services vault.
-- The existing vault already existed in Azure in subscription `'subscritpion-guid-xxxxxxx'`.
+- The existing vault already existed in Azure in subscription `'subscription-guid-xxxxxxxx'`.
 - The goal was to deliberately remove the vault from Terraform state and confirm that the module could recover it by import.
 
 ## Step 1: Inspect the current state
@@ -121,7 +121,7 @@ on ..\..\main.tf line 11, in resource "azapi_resource" "this":
 11: resource "azapi_resource" "this" {
 
 A resource with the ID
-"/subscriptions/'subscritpion-guid-xxxxxxx'/resourceGroups/rg-tmxy/providers/Microsoft.RecoveryServices/vaults/rsv-usc-app1-003"
+"/subscriptions/subscription-guid-xxxxxxxx/resourceGroups/rg-example/providers/Microsoft.RecoveryServices/vaults/rsv-example"
 already exists - to be managed via Terraform this resource needs to be imported into the State.
 ```
 
@@ -138,7 +138,7 @@ Why this mattered:
 Command used:
 
 ```powershell
-terraform import 'module.recovery_services_vault.azapi_resource.this' '/subscriptions/'subscritpion-guid-xxxxxxx'/resourceGroups/rg-tmxy/providers/Microsoft.RecoveryServices/vaults/rsv-usc-app1-003'
+terraform import 'module.recovery_services_vault.azapi_resource.this' '/subscriptions/subscription-guid-xxxxxxxx/resourceGroups/rg-example/providers/Microsoft.RecoveryServices/vaults/rsv-example'
 ```
 
 Observed result:

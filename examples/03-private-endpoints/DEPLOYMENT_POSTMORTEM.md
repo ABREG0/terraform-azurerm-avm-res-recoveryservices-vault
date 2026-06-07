@@ -2,7 +2,7 @@
 
 Date: 2026-06-07
 Scope: `examples/03-private-endpoints`
-Subscription: `6284f04c-ec26-45e3-a7a6-24c2ef4722e4`
+Subscription: `00000000-0000-0000-0000-000000000000`
 
 ## Summary
 This document captures the deployment issues encountered, why each issue had to be fixed, how each one was resolved, and the Terraform imports executed to reconcile state.
@@ -47,7 +47,7 @@ All imports were executed from `examples/03-private-endpoints`.
 - Terraform address:
   - `azurerm_private_dns_zone_virtual_network_link.private_links["blob"]`
 - Resource ID:
-  - `/subscriptions/6284f04c-ec26-45e3-a7a6-24c2ef4722e4/resourceGroups/rg-tmxy/providers/Microsoft.Network/privateDnsZones/privatelink.blob.core.windows.net/virtualNetworkLinks/blob_vnet-tmxy-link`
+  - `/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.Network/privateDnsZones/privatelink.blob.core.windows.net/virtualNetworkLinks/blob_vnet-tmxy-link`
 - Why imported:
   - Resource already existed in Azure but was not present in Terraform state.
 
@@ -55,7 +55,7 @@ All imports were executed from `examples/03-private-endpoints`.
 - Terraform address:
   - `azurerm_private_dns_zone_virtual_network_link.private_links["queue"]`
 - Resource ID:
-  - `/subscriptions/6284f04c-ec26-45e3-a7a6-24c2ef4722e4/resourceGroups/rg-tmxy/providers/Microsoft.Network/privateDnsZones/privatelink.queue.core.windows.net/virtualNetworkLinks/queue_vnet-tmxy-link`
+  - `/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.Network/privateDnsZones/privatelink.queue.core.windows.net/virtualNetworkLinks/queue_vnet-tmxy-link`
 - Why imported:
   - Resource already existed in Azure but was not present in Terraform state.
 
@@ -63,7 +63,7 @@ All imports were executed from `examples/03-private-endpoints`.
 - Terraform address:
   - `azurerm_private_dns_zone_virtual_network_link.private_links["AzureBackup"]`
 - Resource ID:
-  - `/subscriptions/6284f04c-ec26-45e3-a7a6-24c2ef4722e4/resourceGroups/rg-tmxy/providers/Microsoft.Network/privateDnsZones/privatelink.usc.backup.windowsazure.com/virtualNetworkLinks/AzureBackup_vnet-tmxy-link`
+  - `/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.Network/privateDnsZones/privatelink.usc.backup.windowsazure.com/virtualNetworkLinks/AzureBackup_vnet-tmxy-link`
 - Why imported:
   - Resource already existed in Azure but was not present in Terraform state.
 
@@ -71,7 +71,7 @@ All imports were executed from `examples/03-private-endpoints`.
 - Terraform address:
   - `azurerm_private_dns_zone_virtual_network_link.private_links["AzureSiteRecovery"]`
 - Resource ID:
-  - `/subscriptions/6284f04c-ec26-45e3-a7a6-24c2ef4722e4/resourceGroups/rg-tmxy/providers/Microsoft.Network/privateDnsZones/privatelink.siterecovery.windowsazure.com/virtualNetworkLinks/AzureSiteRecovery_vnet-tmxy-link`
+  - `/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.Network/privateDnsZones/privatelink.siterecovery.windowsazure.com/virtualNetworkLinks/AzureSiteRecovery_vnet-tmxy-link`
 - Why imported:
   - Resource already existed in Azure but was not present in Terraform state.
 
@@ -79,7 +79,7 @@ All imports were executed from `examples/03-private-endpoints`.
 - Terraform address:
   - `module.recovery_services_vault.azurerm_recovery_services_vault.this`
 - Resource ID:
-  - `/subscriptions/6284f04c-ec26-45e3-a7a6-24c2ef4722e4/resourceGroups/rg-tmxy/providers/Microsoft.RecoveryServices/vaults/rsv-usc-app1-003`
+  - `/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-example/providers/Microsoft.RecoveryServices/vaults/rsv-example`
 - Why imported:
   - Resource already existed in Azure but was not present in Terraform state.
 
@@ -91,10 +91,10 @@ All imports were executed from `examples/03-private-endpoints`.
 
 ## Final Deployment Result
 - Apply status: `Apply complete! Resources: 2 added, 0 changed, 0 destroyed.`
-- Subscription: `6284f04c-ec26-45e3-a7a6-24c2ef4722e4`
+- Subscription: `00000000-0000-0000-0000-000000000000`
 - Location: `centralus`
-- Resource group: `rg-tmxy`
-- Vault: `rsv-usc-app1-003`
+- Resource group: `rg-example`
+- Vault: `rsv-example`
 
 ## Notes for Future Runs
 - If apply reports "already exists" on resources that are known to be real in Azure, reconcile Terraform state with import before retrying repeated applies.
@@ -103,10 +103,10 @@ All imports were executed from `examples/03-private-endpoints`.
 ## 2026-06-07 Addendum: Example 03 Apply Risk (AzAPI Subscription Context)
 
 ### What was observed
-- Running `terraform plan` while Azure CLI was set to subscription `c5c1228d-b650-4f0a-97ea-1f8cfdc417c5` produced a destructive plan:
+- Running `terraform plan` while Azure CLI was set to subscription `11111111-1111-1111-1111-111111111111` produced a destructive plan:
   - `Plan: 3 to add, 1 to change, 3 to destroy`
   - Included replacement of `module.recovery_services_vault.azapi_resource.this` and private endpoints.
-- Running `terraform plan` after switching Azure CLI to subscription `6284f04c-ec26-45e3-a7a6-24c2ef4722e4` produced a non-destructive plan:
+- Running `terraform plan` after switching Azure CLI to subscription `00000000-0000-0000-0000-000000000000` produced a non-destructive plan:
   - `Plan: 0 to add, 2 to change, 0 to destroy`
 
 ### Why this happens
@@ -122,7 +122,7 @@ All imports were executed from `examples/03-private-endpoints`.
 
 ### Safe run procedure before apply
 1. Set the intended subscription explicitly:
-   - `az account set --subscription 6284f04c-ec26-45e3-a7a6-24c2ef4722e4`
+   - `az account set --subscription 00000000-0000-0000-0000-000000000000`
 2. Verify active account:
    - `az account show --query "{subscriptionId:id,name:name}" -o json`
 3. Run `terraform plan -no-color` and confirm no forced replacement of:

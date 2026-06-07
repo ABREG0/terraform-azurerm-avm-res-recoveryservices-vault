@@ -70,7 +70,7 @@ module "recovery_services_vault" {
 
       tags = {
         env   = "Prod"
-        owner = "ABREG0 "
+        owner = "example-owner"
         dept  = "IT"
       }
 

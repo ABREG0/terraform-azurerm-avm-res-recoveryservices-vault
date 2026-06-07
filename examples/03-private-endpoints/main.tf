@@ -1,11 +1,4 @@
 
-
-# This ensures we have unique CAF compliant names for our resources.
-# This allows us to randomize the region for the resource group.
-resource "random_integer" "region_index" {
-  max = length(local.test_regions) - 1
-  min = 0
-}
 # This allow use to randomize the name of resources
 resource "random_string" "this" {
   length  = 6
@@ -19,13 +12,12 @@ module "naming" {
 }
 
 resource "azurerm_resource_group" "this" {
-  location = local.test_regions[random_integer.region_index.result]
+  location = var.location
   name     = module.naming.resource_group.name_unique
 }
 
 locals {
-  test_regions = ["eastus", "eastus2", "westus3"] #  "westu2",
-  vault_name   = "${module.naming.recovery_services_vault.slug}-${module.azure_region.location_short}-app1-003"
+  vault_name = "${module.naming.recovery_services_vault.slug}-${module.azure_region.location_short}-app1-003"
 }
 
 module "regions" {
@@ -37,7 +29,7 @@ module "azure_region" {
   source  = "claranet/regions/azurerm"
   version = "7.1.1"
 
-  azure_region = "westus3"
+  azure_region = var.location
 }
 
 locals {

@@ -14,7 +14,7 @@ This terraform module is designed to deploy Azure Recovery Services Vault. It ha
 ## Limitations and notes
 
 * Feature in preview: Using `user-assigned managed identities` still in preview. [reference](https://learn.microsoft.com/en-us/azure/backup/encryption-at-rest-with-cmk?tabs=portal#assign-a-user-assigned-managed-identity-to-the-vault-in-preview)
-* Vaults that use `user-assigned managed identities` for CMK encryption don't support the use of private endpoints for backup. [reference](https://learn.microsoft.com/en-us/azure/backup/)
+* Vaults that use `user-assigned managed identities` for CMK encryption don't support the use of private endpoints for backup. Use `managed_identities.system_assigned = true` with CMK if you need Azure Backup private endpoints. [reference](https://learn.microsoft.com/en-us/azure/backup/)
 
 ## Feature requests and work in progress
 
@@ -204,7 +204,7 @@ Description: An object type defines a customer managed key to use for encryption
 - `key_vault_resource_id` - (Required) - The full Azure Resource ID of the key\_vault where the customer managed key will be referenced from.
 - `key_name` - (Required) - The full Azur Resource ID of the customer managed Key stored in the key vault
 - `key_version` - (Optional) - Customer managed key version
-- `user_assigned_identity` - (Required) - The user assigned identity to use when accessing the encryption key saved in a key vault. A matching user-assigned identity must also be present in `var.managed_identities.user_assigned_resource_ids`.
+- `user_assigned_identity` - (Optional) - The user assigned identity to use when accessing the encryption key saved in a key vault. If specified, the same identity must also be present in `var.managed_identities.user_assigned_resource_ids`. If omitted, `var.managed_identities.system_assigned` must be `true`.
 
 Example Inputs:
 ```terraform
@@ -522,6 +522,17 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_resource_guard_operation_requests"></a> [resource\_guard\_operation\_requests](#input\_resource\_guard\_operation\_requests)
+
+Description: (Optional) A list of Resource Guard operation request IDs to associate with the Recovery Services Vault.
+
+Each item should be a fully qualified operation request resource ID under a Microsoft.DataProtection Resource Guard, for example:
+`/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-guard/providers/Microsoft.DataProtection/resourceGuards/rg1/modifyEncryptionSettings/default`
+
+Type: `list(string)`
+
+Default: `[]`
+
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 
 Description: A map of role assignments to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
@@ -554,11 +565,11 @@ Default: `{}`
 
 ### <a name="input_soft_delete_enabled"></a> [soft\_delete\_enabled](#input\_soft\_delete\_enabled)
 
-Description: (optional) Specify Setting for Soft Delete. true (default), false
+Description: (optional) Specify the soft delete state for the Recovery Services Vault. Possible values are `Enabled` (default), `Disabled`, and `AlwaysOn`. `AlwaysOn` enables always-on soft delete and cannot be reverted to `Enabled` or `Disabled`.
 
-Type: `bool`
+Type: `string`
 
-Default: `true`
+Default: `"Enabled"`
 
 ### <a name="input_storage_mode_type"></a> [storage\_mode\_type](#input\_storage\_mode\_type)
 

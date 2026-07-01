@@ -1,6 +1,7 @@
 locals {
   daily_time_formatted = "1900-01-01T${var.file_share_backup_policy["backup"].time}:00Z"
   hourly_start_time    = var.file_share_backup_policy.frequency == "Hourly" && var.file_share_backup_policy.backup.hourly != null ? "1900-01-01T${var.file_share_backup_policy.backup.hourly.start_time}:00Z" : null
+  is_hourly            = lower(var.file_share_backup_policy.frequency) == "hourly"
   retention_policy = {
     retentionPolicyType = "LongTermRetentionPolicy"
     dailySchedule = can(regex("^(?:[1-9][0-9]?|1[0-9]{2}|200)$", tostring(var.file_share_backup_policy["retention_daily"]))) ? {
@@ -54,13 +55,26 @@ locals {
       }
     } : null
   }
+  hourly_retention_offset_hours = (
+    local.is_hourly && var.file_share_backup_policy.backup.hourly != null
+    ) ? floor(
+    var.file_share_backup_policy.backup.hourly.window_duration /
+    var.file_share_backup_policy.backup.hourly.interval
+  ) * var.file_share_backup_policy.backup.hourly.interval : 0
 
-
-  is_hourly = lower(var.file_share_backup_policy.frequency) == "hourly"
+  hourly_retention_time = (
+    local.is_hourly && local.hourly_start_time != null
+    ) ? formatdate(
+    "YYYY-MM-DD'T'hh:mm:ss'Z'",
+    timeadd(
+      local.hourly_start_time,
+      "${local.hourly_retention_offset_hours}h"
+    )
+  ) : null
 
   retention_time = (
-    local.is_hourly && local.hourly_start_time != null
-  ) ? local.hourly_start_time : local.daily_time_formatted
+    local.is_hourly
+  ) ? local.hourly_retention_time : local.daily_time_formatted
 
   schedule_policy = jsondecode(
     local.is_hourly ? jsonencode({
@@ -80,8 +94,27 @@ locals {
     })
   )
 
-
   use_vault_standard = lower(var.file_share_backup_policy.backup_tier) == "vault-standard"
+  
+  base_properties = {
+    backupManagementType = "AzureStorage"
+    workLoadType         = "AzureFileShare"
+    timeZone             = var.file_share_backup_policy.timezone
+    schedulePolicy       = local.schedule_policy
+  }
+  
+  properties = merge(
+    local.base_properties,
+    local.use_vault_standard ? {} : {
+      retentionPolicy = local.retention_policy
+    },
+    local.use_vault_standard ? {
+      vaultRetentionPolicy = {
+        snapshotRetentionInDays = var.file_share_backup_policy.snapshot_retention_in_days
+        vaultRetention          = local.retention_policy
+      }
+    } : {}
+  )
 }
 
 
@@ -92,17 +125,7 @@ resource "azapi_resource" "this" {
   parent_id = "/subscriptions/${data.azapi_client_config.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.RecoveryServices/vaults/${var.recovery_vault_name}"
   type      = "Microsoft.RecoveryServices/vaults/backupPolicies@2024-10-01"
   body = {
-    properties = {
-      backupManagementType = "AzureStorage"
-      workLoadType         = "AzureFileShare"
-      timeZone             = var.file_share_backup_policy.timezone
-      schedulePolicy       = local.schedule_policy
-      retentionPolicy      = local.use_vault_standard ? null : local.retention_policy
-      vaultRetentionPolicy = local.use_vault_standard ? {
-        snapshotRetentionInDays = var.file_share_backup_policy.snapshot_retention_in_days
-        vaultRetention          = local.retention_policy
-      } : null
-    }
+    properties = local.properties
   }
   read_query_parameters = {
     "api-version" = ["2024-10-01"]

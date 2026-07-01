@@ -134,7 +134,7 @@ An object type defines a customer managed key to use for encryption.
 - `key_vault_resource_id` - (Required) - The full Azure Resource ID of the key_vault where the customer managed key will be referenced from.
 - `key_name` - (Required) - The full Azur Resource ID of the customer managed Key stored in the key vault
 - `key_version` - (Optional) - Customer managed key version
-- `user_assigned_identity` - (Required) - The user assigned identity to use when accessing the encryption key saved in a key vault. A matching user-assigned identity must also be present in `var.managed_identities.user_assigned_resource_ids`.
+- `user_assigned_identity` - (Optional) - The user assigned identity to use when accessing the encryption key saved in a key vault. If specified, the same identity must also be present in `var.managed_identities.user_assigned_resource_ids`. If omitted, `var.managed_identities.system_assigned` must be `true`.
 
 
 Example Inputs:
@@ -151,8 +151,16 @@ key_vault_resource_id = {
 DESCRIPTION
 
   validation {
-    condition     = var.customer_managed_key == null || var.customer_managed_key.user_assigned_identity != null
-    error_message = "CMK encryption requires a user-assigned managed identity. Set customer_managed_key.user_assigned_identity, and ensure the same identity is included in var.managed_identities.user_assigned_resource_ids. Omitting a managed identity causes a ManagedIdentityDetailsNotPresent error from the Recovery Services API."
+    condition = var.customer_managed_key == null || (
+      (
+        var.customer_managed_key.user_assigned_identity == null &&
+        var.managed_identities.system_assigned
+        ) || (
+        var.customer_managed_key.user_assigned_identity != null &&
+        contains(var.managed_identities.user_assigned_resource_ids, var.customer_managed_key.user_assigned_identity.resource_id)
+      )
+    )
+    error_message = "CMK encryption requires a managed identity. Either set managed_identities.system_assigned = true (system-assigned identity), or set customer_managed_key.user_assigned_identity and include the same resource ID in managed_identities.user_assigned_resource_ids."
   }
 }
 
@@ -458,6 +466,17 @@ variable "public_network_access_enabled" {
   description = "(optional) Specify Public Network Access. true (default), false"
 }
 
+variable "resource_guard_operation_requests" {
+  type        = list(string)
+  default     = []
+  description = <<DESCRIPTION
+(Optional) A list of Resource Guard operation request IDs to associate with the Recovery Services Vault.
+
+Each item should be a fully qualified operation request resource ID under a Microsoft.DataProtection Resource Guard, for example:
+`/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-guard/providers/Microsoft.DataProtection/resourceGuards/rg1/modifyEncryptionSettings/default`
+DESCRIPTION
+}
+
 variable "role_assignments" {
   type = map(object({
     role_definition_id_or_name             = string
@@ -486,9 +505,15 @@ DESCRIPTION
 }
 
 variable "soft_delete_enabled" {
-  type        = bool
-  default     = true
-  description = "(optional) Specify Setting for Soft Delete. true (default), false"
+  type        = string
+  default     = "Enabled"
+  description = "(optional) Specify the soft delete state for the Recovery Services Vault. Possible values are `Enabled` (default), `Disabled`, and `AlwaysOn`. `AlwaysOn` enables always-on soft delete and cannot be reverted to `Enabled` or `Disabled`."
+  nullable    = false
+
+  validation {
+    condition     = contains(["Disabled", "Enabled", "AlwaysOn"], var.soft_delete_enabled)
+    error_message = "soft_delete_enabled must be one of: Disabled, Enabled, AlwaysOn."
+  }
 }
 
 variable "storage_mode_type" {

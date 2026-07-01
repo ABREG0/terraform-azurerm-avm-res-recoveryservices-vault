@@ -25,7 +25,8 @@ resource "azapi_resource" "this" {
       } : null
     } : null
     properties = {
-      publicNetworkAccess = var.public_network_access_enabled ? "Enabled" : "Disabled"
+      publicNetworkAccess            = var.public_network_access_enabled ? "Enabled" : "Disabled"
+      resourceGuardOperationRequests = length(var.resource_guard_operation_requests) > 0 ? var.resource_guard_operation_requests : null
       redundancySettings = {
         standardTierStorageRedundancy = var.storage_mode_type
         crossRegionRestore            = var.cross_region_restore_enabled ? "Enabled" : "Disabled"
@@ -35,7 +36,7 @@ resource "azapi_resource" "this" {
           state = var.immutability
         } : null
         softDeleteSettings = {
-          softDeleteState = var.soft_delete_enabled ? "Enabled" : "Disabled"
+          softDeleteState = var.soft_delete_enabled
         }
       }
       monitoringSettings = {
@@ -105,6 +106,7 @@ resource "azurerm_monitor_diagnostic_setting" "this" {
       category_group = enabled_log.value
     }
   }
+
   dynamic "metric" {
     for_each = each.value.metric_categories
 
